@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+logs/*
+uploads/*
+ai_models/*
+.pytest_cache/
+.venv/
+venv/

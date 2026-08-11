@@ -1,0 +1,54 @@
+# ==============================================================
+# LocalSM AI Exam Portal — Backend Requirements
+# Pin minimum versions; update and audit regularly.
+# Run: pip-audit --requirement requirements.txt
+# ==============================================================
+
+# --- Web Framework ---
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.30.0,<1.0.0
+
+# --- Async PostgreSQL ---
+sqlalchemy[asyncio]>=2.0.35,<3.0.0
+asyncpg>=0.29.0,<1.0.0
+alembic>=1.13.0,<2.0.0
+
+# --- Data Validation ---
+pydantic>=2.9.0,<3.0.0
+pydantic[email]>=2.9.0,<3.0.0
+pydantic-settings>=2.5.0,<3.0.0
+email-validator>=2.2.0,<3.0.0
+
+# --- Security: Password Hashing ---
+# passlib provides a safe bcrypt wrapper; bcrypt is the backend.
+# NEVER use a version of bcrypt <4.0 — older versions had a known
+# length truncation issue. passlib validates the cost factor.
+passlib[bcrypt]>=1.7.4,<2.0.0
+bcrypt>=4.2.0,<5.0.0
+
+# --- Security: JWT ---
+# python-jose with cryptography backend.
+# The server MUST NOT accept algorithm from client ("alg" header).
+python-jose[cryptography]>=3.3.0,<4.0.0
+
+# --- Rate Limiting ---
+slowapi>=0.1.9,<1.0.0
+limits>=3.13.0,<4.0.0
+
+# --- Logging ---
+loguru>=0.7.2,<1.0.0
+
+# --- Utilities ---
+python-multipart>=0.0.12,<1.0.0  # form parsing
+httpx>=0.27.0,<1.0.0              # async HTTP client (tests + integrations)
+anyio>=4.6.0,<5.0.0
+
+# --- Testing ---
+pytest>=8.3.0,<9.0.0
+pytest-asyncio>=0.24.0,<1.0.0
+pytest-cov>=5.0.0,<6.0.0
+
+# --- Dev / Linting (optional, install separately in CI) ---
+# ruff>=0.6.0
+# mypy>=1.11.0
+# pip-audit>=2.7.0
