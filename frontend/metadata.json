@@ -1,0 +1,6 @@
+{
+  "name": "Exam Portal",
+  "description": "Secure AI Interview & Examination Platform for streamlining university examinations with AI proctoring.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
