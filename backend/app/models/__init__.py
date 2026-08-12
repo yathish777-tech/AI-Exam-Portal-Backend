@@ -35,6 +35,12 @@ from app.models.exam_attempt import ExamAttempt  # noqa: F401
 from app.models.submission import Submission  # noqa: F401
 from app.models.exam_result import ExamResult  # noqa: F401
 
+# --- Phase 4: Admin / Student / Interviewer / Notifications / Proctoring ---
+from app.models.notification import Notification  # noqa: F401
+from app.models.proctoring_warning import ProctoringWarning  # noqa: F401
+from app.models.activity_log import ActivityLog  # noqa: F401
+from app.models.system_setting import SystemSetting  # noqa: F401
+
 __all__ = [
     "Base",
     # Auth
@@ -51,4 +57,9 @@ __all__ = [
     "ExamAttempt",
     "Submission",
     "ExamResult",
+    # Phase 4
+    "Notification",
+    "ProctoringWarning",
+    "ActivityLog",
+    "SystemSetting",
 ]
