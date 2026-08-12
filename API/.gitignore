@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+exam_management.db
+.venv/
+.DS_Stor
