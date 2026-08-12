@@ -2,6 +2,11 @@
 
 Production-oriented backend for the LocalSM Secure AI Exam Portal.
 
+## Backend Running cmd:
+ - alembic upgrade head
+ - uvicorn app.main:app --reload
+
+
 ## 🚀 Tech Stack
 
 - Python 3.14+

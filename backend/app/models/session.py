@@ -50,6 +50,7 @@ class UserSession(UUIDMixin, TimestampMixin, Base):
         Index("ix_sessions_user_id", "user_id"),
         Index("ix_sessions_token_family_id", "token_family_id"),
         Index("ix_sessions_jwt_jti", "jwt_jti"),
+        Index("ix_sessions_replaced_by", "replaced_by"),
         Index(
             "ix_sessions_current_refresh_token_hash",
             "current_refresh_token_hash",
@@ -98,6 +99,14 @@ class UserSession(UUIDMixin, TimestampMixin, Base):
         nullable=True,
     )
 
+    # Points from a rotated/revoked refresh token row to its replacement.
+    # This preserves session lineage without storing any raw token material.
+    replaced_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sessions.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     # --- Relationships ---
     user: Mapped["User"] = relationship("User", back_populates="sessions")
 
@@ -110,7 +119,11 @@ class UserSession(UUIDMixin, TimestampMixin, Base):
     def is_expired(self) -> bool:
         """True if this session's refresh token has expired."""
         from datetime import timezone
-        return self.expires_at < datetime.now(timezone.utc)
+
+        expires_at = self.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        return expires_at < datetime.now(timezone.utc)
 
     def __repr__(self) -> str:
         return (

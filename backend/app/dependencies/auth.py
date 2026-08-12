@@ -23,6 +23,7 @@ SECURITY:
 from __future__ import annotations
 
 import uuid
+from dataclasses import dataclass
 
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -48,17 +49,26 @@ from app.repositories.user_repository import UserRepository
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 
-async def get_current_user(
+@dataclass(frozen=True)
+class AuthenticatedUser:
+    """Validated authentication context for the current request."""
+
+    user: User
+    jti: str
+    session_id: uuid.UUID
+
+
+async def get_current_user_context(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> AuthenticatedUser:
     """
     FastAPI dependency: validate JWT and return the authenticated User.
 
     Usage:
         @router.get("/protected")
-        async def protected(user: User = Depends(get_current_user)):
+        async def protected(auth = Depends(get_current_user_context)):
             ...
 
     Raises:
@@ -116,6 +126,32 @@ async def get_current_user(
     except ValueError:
         raise TokenInvalidError("Token subject is not a valid UUID.")
 
+    if session.user_id != user_id:
+        log_security_event(
+            SecurityEvent.TOKEN_VALIDATION_FAILED,
+            request_id=request_id,
+            user_id=subject,
+            ip_address=request.client.host if request.client else "",
+            endpoint=str(request.url.path),
+            success=False,
+            detail="Token subject does not match session user",
+        )
+        raise TokenInvalidError("Authentication token is invalid or has expired.")
+
+    if session.is_expired:
+        await session_repo.revoke_session(session.id)
+        await db.commit()
+        log_security_event(
+            SecurityEvent.SESSION_REVOKED,
+            request_id=request_id,
+            user_id=subject,
+            ip_address=request.client.host if request.client else "",
+            endpoint=str(request.url.path),
+            success=False,
+            detail="Session expired",
+        )
+        raise SessionRevokedError("Session is not valid. Please log in again.")
+
     user_repo = UserRepository(db)
     user = await user_repo.get_by_id(user_id)
 
@@ -137,4 +173,11 @@ async def get_current_user(
     # Store user on request state for downstream logging
     request.state.user_id = str(user.id)
 
-    return user
+    return AuthenticatedUser(user=user, jti=jti, session_id=session.id)
+
+
+async def get_current_user(
+    auth: AuthenticatedUser = Depends(get_current_user_context),
+) -> User:
+    """Compatibility dependency: return only the authenticated User."""
+    return auth.user

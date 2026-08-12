@@ -64,7 +64,9 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # JWT
     # -----------------------------------------------------------------------
-    jwt_secret_key: SecretStr
+    jwt_secret_key: SecretStr | None = None
+    jwt_private_key: SecretStr | None = None
+    jwt_public_key: SecretStr | None = None
     jwt_algorithm: str = "HS256"
     jwt_issuer: str = ""   # empty = skip iss validation
     jwt_audience: str = "" # empty = skip aud validation
@@ -154,8 +156,10 @@ class Settings(BaseSettings):
 
     @field_validator("jwt_secret_key")
     @classmethod
-    def validate_jwt_secret_key(cls, v: SecretStr) -> SecretStr:
+    def validate_jwt_secret_key(cls, v: SecretStr | None) -> SecretStr | None:
         """Enforce a minimum key length (64 hex chars = 256 bits)."""
+        if v is None:
+            return v
         raw = v.get_secret_value()
         if len(raw) < 32:
             raise ValueError(
@@ -219,6 +223,44 @@ class Settings(BaseSettings):
             raise ValueError(
                 "COOKIE_SAMESITE=none requires COOKIE_SECURE=true. "
                 "Browsers reject SameSite=None cookies without the Secure flag."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_jwt_key_material(self) -> "Settings":
+        """Ensure configured JWT algorithm has matching server-side key material."""
+        if self.jwt_algorithm.startswith("HS"):
+            if self.jwt_secret_key is None:
+                raise ValueError("JWT_SECRET_KEY is required for HS* JWT algorithms.")
+            raw_secret = self.jwt_secret_key.get_secret_value()
+            insecure_placeholders = {
+                "secret",
+                "password",
+                "1234",
+                "development-secret",
+                "dev-secret",
+                "change-me",
+                "changeme",
+            }
+            if self.environment == "production" and (
+                raw_secret.lower() in insecure_placeholders
+                or raw_secret.lower().startswith("dev_")
+            ):
+                raise ValueError(
+                    "JWT_SECRET_KEY must be a strong production secret, not a "
+                    "development placeholder."
+                )
+            return self
+
+        if (
+            self.jwt_private_key is None
+            or self.jwt_public_key is None
+            or not self.jwt_private_key.get_secret_value().strip()
+            or not self.jwt_public_key.get_secret_value().strip()
+        ):
+            raise ValueError(
+                "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY are required for asymmetric "
+                "JWT algorithms."
             )
         return self
 

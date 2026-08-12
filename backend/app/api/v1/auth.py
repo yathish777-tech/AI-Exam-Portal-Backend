@@ -38,7 +38,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.constants import REQUEST_ID_HEADER
 from app.database.dependencies import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import (
+    AuthenticatedUser,
+    get_current_user,
+    get_current_user_context,
+)
 from app.dependencies.common import get_client_ip, get_request_id, get_user_agent
 from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.middleware.rate_limit import limiter
@@ -350,30 +354,14 @@ async def refresh_tokens(
 async def logout(
     request: Request,
     response: Response,
-    current_user: User = Depends(get_current_user),
+    auth: AuthenticatedUser = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ) -> MessageResponse:
     """Revoke the current session."""
-    # Extract JTI from token (already validated by get_current_user)
-    from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-    from app.core.security import decode_access_token
-    from fastapi import Request as FastAPIRequest
-
-    # Re-extract JTI from the Authorization header
-    auth_header = request.headers.get("Authorization", "")
-    jti = ""
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-        try:
-            payload = decode_access_token(token)
-            jti = payload.get("jti", "")
-        except Exception:
-            pass
-
     service = AuthService(db)
     await service.logout(
-        jti=jti,
-        user_id=str(current_user.id),
+        jti=auth.jti,
+        user_id=str(auth.user.id),
         request_id=get_request_id(request),
         ip_address=get_client_ip(request),
     )

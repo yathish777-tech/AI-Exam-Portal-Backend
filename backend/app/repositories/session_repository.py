@@ -84,15 +84,24 @@ class SessionRepository:
         )
         return result.scalar_one_or_none()
 
-    async def revoke_session(self, session_id: uuid.UUID) -> None:
+    async def revoke_session(
+        self,
+        session_id: uuid.UUID,
+        *,
+        replaced_by: uuid.UUID | None = None,
+    ) -> None:
         """Mark a single session as revoked."""
+        values: dict[str, object] = {"revoked_at": datetime.now(timezone.utc)}
+        if replaced_by is not None:
+            values["replaced_by"] = replaced_by
+
         await self._db.execute(
             update(UserSession)
             .where(
                 UserSession.id == session_id,
                 UserSession.revoked_at.is_(None),
             )
-            .values(revoked_at=datetime.now(timezone.utc))
+            .values(**values)
         )
         await self._db.flush()
 
@@ -138,8 +147,7 @@ class SessionRepository:
         Keeping the old row with revoked_at set lets the service detect
         replay/reuse of any previously rotated refresh token.
         """
-        await self.revoke_session(session_id)
-        return await self.create_session(
+        new_session = await self.create_session(
             user_id=user_id,
             token_family_id=token_family_id,
             jwt_jti=new_jti,
@@ -148,6 +156,8 @@ class SessionRepository:
             user_agent=user_agent,
             expires_at=new_expires_at,
         )
+        await self.revoke_session(session_id, replaced_by=new_session.id)
+        return new_session
 
     async def update_refresh_token(
         self,

@@ -111,7 +111,35 @@ def _get_jwt_options(require_exp: bool = True) -> dict:
         "verify_exp": require_exp,
         "verify_iss": bool(settings.jwt_issuer),
         "verify_aud": bool(settings.jwt_audience),
+        "require_exp": require_exp,
+        "require_iat": True,
+        "require_sub": True,
+        "require_jti": True,
     }
+
+
+def _get_jwt_signing_key() -> str:
+    """Return server-side signing key for the configured JWT algorithm."""
+    if settings.jwt_algorithm.startswith("HS"):
+        if settings.jwt_secret_key is None:
+            raise RuntimeError("JWT signing key is not configured.")
+        return settings.jwt_secret_key.get_secret_value()
+
+    if settings.jwt_private_key is None:
+        raise RuntimeError("JWT private key is not configured.")
+    return settings.jwt_private_key.get_secret_value()
+
+
+def _get_jwt_verification_key() -> str:
+    """Return server-side verification key for the configured JWT algorithm."""
+    if settings.jwt_algorithm.startswith("HS"):
+        if settings.jwt_secret_key is None:
+            raise RuntimeError("JWT verification key is not configured.")
+        return settings.jwt_secret_key.get_secret_value()
+
+    if settings.jwt_public_key is None:
+        raise RuntimeError("JWT public key is not configured.")
+    return settings.jwt_public_key.get_secret_value()
 
 
 def generate_access_token(
@@ -170,8 +198,7 @@ def generate_access_token(
         safe_extra = {k: v for k, v in extra_claims.items() if k not in reserved}
         payload.update(safe_extra)
 
-    secret = settings.jwt_secret_key.get_secret_value()
-    return jwt.encode(payload, secret, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, _get_jwt_signing_key(), algorithm=settings.jwt_algorithm)
 
 
 def decode_access_token(token: str) -> dict:
@@ -194,16 +221,16 @@ def decode_access_token(token: str) -> dict:
     # Explicitly specify the algorithm — never allow the client to dictate it.
     # This prevents algorithm confusion / "alg=none" attacks.
     try:
-        secret = settings.jwt_secret_key.get_secret_value()
-
         decode_kwargs: dict = {
             "algorithms": [settings.jwt_algorithm],  # server-side allowlist
             "options": _get_jwt_options(require_exp=True),
         }
         if settings.jwt_audience:
             decode_kwargs["audience"] = settings.jwt_audience
+        if settings.jwt_issuer:
+            decode_kwargs["issuer"] = settings.jwt_issuer
 
-        payload: dict = jwt.decode(token, secret, **decode_kwargs)
+        payload: dict = jwt.decode(token, _get_jwt_verification_key(), **decode_kwargs)
     except JWTError:
         raise  # re-raise to let callers produce the correct HTTP error
 
@@ -219,6 +246,8 @@ def decode_access_token(token: str) -> dict:
         raise JWTError("Token missing 'sub' claim.")
     if not payload.get("jti"):
         raise JWTError("Token missing 'jti' claim.")
+    if not payload.get("iat"):
+        raise JWTError("Token missing 'iat' claim.")
 
     return payload
 
