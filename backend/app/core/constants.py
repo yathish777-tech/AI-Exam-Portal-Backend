@@ -49,6 +49,7 @@ class SecurityEvent(StrEnum):
     consistent, searchable log entries in your SIEM.
     """
 
+    # --- Auth events (Phase 1) ---
     LOGIN_SUCCESS = "LOGIN_SUCCESS"
     LOGIN_FAILED = "LOGIN_FAILED"
     LOGIN_INACTIVE_ACCOUNT = "LOGIN_INACTIVE_ACCOUNT"
@@ -72,6 +73,24 @@ class SecurityEvent(StrEnum):
     ACCOUNT_DISABLED = "ACCOUNT_DISABLED"
     AUTHORIZATION_FAILED = "AUTHORIZATION_FAILED"
     RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
+    # --- Phase 3: Exam portal events ---
+    EXAM_CREATED = "EXAM_CREATED"
+    EXAM_UPDATED = "EXAM_UPDATED"
+    EXAM_DELETED = "EXAM_DELETED"
+    EXAM_PUBLISHED = "EXAM_PUBLISHED"
+    EXAM_SCHEDULED = "EXAM_SCHEDULED"
+    QUESTION_CREATED = "QUESTION_CREATED"
+    QUESTION_UPDATED = "QUESTION_UPDATED"
+    QUESTION_DELETED = "QUESTION_DELETED"
+    CANDIDATE_ASSIGNED = "CANDIDATE_ASSIGNED"
+    CANDIDATE_REMOVED = "CANDIDATE_REMOVED"
+    ATTEMPT_STARTED = "ATTEMPT_STARTED"
+    ATTEMPT_DUPLICATE = "ATTEMPT_DUPLICATE"
+    ANSWER_SAVED = "ANSWER_SAVED"
+    EXAM_SUBMITTED = "EXAM_SUBMITTED"
+    EXAM_ALREADY_SUBMITTED = "EXAM_ALREADY_SUBMITTED"
+    RESULT_CREATED = "RESULT_CREATED"
+    IDOR_ATTEMPT = "IDOR_ATTEMPT"
 
 
 # ---------------------------------------------------------------------------
@@ -95,3 +114,87 @@ OTP_LENGTH: int = 6  # digits — 10^6 = 1,000,000 possibilities
 # Request ID Header
 # ---------------------------------------------------------------------------
 REQUEST_ID_HEADER: str = "X-Request-ID"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Exam Status
+# ---------------------------------------------------------------------------
+class ExamStatus(StrEnum):
+    """
+    Exam lifecycle states.
+
+    Allowed transitions:
+      DRAFT → PUBLISHED
+      PUBLISHED → SCHEDULED (adds scheduled_at)
+      PUBLISHED | SCHEDULED → COMPLETED
+      DRAFT | PUBLISHED | SCHEDULED → CANCELLED
+
+    Disallowed:
+      COMPLETED → anything
+      CANCELLED → anything
+    """
+
+    DRAFT = "DRAFT"
+    PUBLISHED = "PUBLISHED"
+    SCHEDULED = "SCHEDULED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Question Type
+# ---------------------------------------------------------------------------
+class QuestionType(StrEnum):
+    """
+    Supported question types.
+
+    MCQ:          Multiple choice; evaluated automatically against correct_option.
+    SHORT_ANSWER: Free text; requires manual/AI evaluation — marked PENDING_EVALUATION.
+    CODING:       Code submission; requires sandboxed evaluation (separate phase).
+    FILE:         File upload; requires manual evaluation.
+    """
+
+    MCQ = "MCQ"
+    SHORT_ANSWER = "SHORT_ANSWER"
+    CODING = "CODING"
+    FILE = "FILE"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Attempt Status
+# ---------------------------------------------------------------------------
+class AttemptStatus(StrEnum):
+    """
+    Exam attempt lifecycle states.
+
+    IN_PROGRESS → SUBMITTED (normal candidate submission)
+    IN_PROGRESS → ABANDONED (timeout / manual)
+    """
+
+    IN_PROGRESS = "IN_PROGRESS"
+    SUBMITTED = "SUBMITTED"
+    ABANDONED = "ABANDONED"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Result Status
+# ---------------------------------------------------------------------------
+class ResultStatus(StrEnum):
+    """
+    Result evaluation status.
+
+    EVALUATED:          All questions scored automatically (pure MCQ exam).
+    PENDING_EVALUATION: Contains SHORT_ANSWER / CODING / FILE questions
+                        that require manual or AI evaluation.
+    """
+
+    EVALUATED = "EVALUATED"
+    PENDING_EVALUATION = "PENDING_EVALUATION"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Pagination defaults
+# ---------------------------------------------------------------------------
+PAGINATION_DEFAULT_PAGE: int = 1
+PAGINATION_DEFAULT_PAGE_SIZE: int = 20
+PAGINATION_MAX_PAGE_SIZE: int = 100

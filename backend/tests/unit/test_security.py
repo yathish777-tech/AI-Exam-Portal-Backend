@@ -169,7 +169,11 @@ def test_access_token_rejects_invalid_signature() -> None:
         jti=generate_jti(),
         role="CANDIDATE",
     )
-    tampered = token[:-1] + ("a" if token[-1] != "a" else "b")
+    header, payload, signature = token.split(".")
+    decoded_payload = json.loads(base64.urlsafe_b64decode(payload + "=="))
+    decoded_payload["role"] = "ADMIN"
+    tampered_payload = _b64url(json.dumps(decoded_payload).encode())
+    tampered = f"{header}.{tampered_payload}.{signature}"
 
     with pytest.raises(JWTError):
         decode_access_token(tampered)

@@ -12,12 +12,14 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1.auth import router as auth_router
+from app.api.v1.health import router as health_router
 
 # The main v1 router — prefix is applied in main.py
 api_v1_router = APIRouter(prefix="/api/v1")
 
 # Include sub-routers
 api_v1_router.include_router(auth_router)
+api_v1_router.include_router(health_router)
 
 # Future routers (uncomment as modules are implemented):
 # from app.api.v1.admins import router as admins_router

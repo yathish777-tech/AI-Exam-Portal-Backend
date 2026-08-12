@@ -36,10 +36,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from sqlalchemy import text
 
 from app.api.v1.router import api_v1_router
 from app.core.config import get_settings
 from app.core.logging import setup_logging
+from app.database.session import AsyncSessionLocal, engine
 from app.middleware.error_handler import register_exception_handlers
 from app.middleware.logging import RequestLoggingMiddleware
 from app.middleware.rate_limit import limiter
@@ -59,14 +61,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     Application startup and shutdown logic.
 
     Startup:
-    - Configure logging.
-    - (Future) Warm database connection pool.
-    - (Future) Load AI models.
+    - Configure logging (must be first — all subsequent startup logs use it).
+    - Warm the database connection pool (verify connectivity early).
 
     Shutdown:
-    - (Future) Drain connection pool.
+    - Dispose the async engine so all pooled connections are cleanly closed.
+      Without this, long-running deployments accumulate stale connections.
     """
-    # 1. Configure logging first
+    # 1. Configure logging first so all startup events are captured
     setup_logging()
 
     from loguru import logger
@@ -74,11 +76,36 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         "LocalSM AI Exam Portal starting",
         environment=settings.environment,
         debug=settings.debug,
+        pool_size=settings.database_pool_size,
+        max_overflow=settings.database_max_overflow,
     )
+
+    # 2. Warm the database connection pool with a cheap probe.
+    #    This surfaces misconfiguration early (bad credentials, wrong host)
+    #    before the first real request arrives. Failure here is intentional
+    #    — we want to know the DB is unreachable at startup, not mid-request.
+    try:
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        logger.info("Database connection pool warmed successfully")
+    except Exception as exc:
+        # Log the error but do NOT expose connection details in the message.
+        logger.error(
+            "Database connectivity check failed during startup",
+            exc_type=type(exc).__name__,
+        )
+        # Re-raise so uvicorn/the process manager knows startup failed.
+        raise
 
     yield
 
+    # -----------------------------------------------------------------------
+    # Shutdown
+    # -----------------------------------------------------------------------
     logger.info("LocalSM AI Exam Portal shutting down")
+    # Dispose the engine: gracefully close all pooled connections.
+    await engine.dispose()
+    logger.info("Database engine disposed — all connections closed")
 
 
 # ---------------------------------------------------------------------------

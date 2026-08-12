@@ -62,6 +62,17 @@ class Settings(BaseSettings):
         return self.database_url.get_secret_value()
 
     # -----------------------------------------------------------------------
+    # Database Connection Pool
+    # -----------------------------------------------------------------------
+    # These mirror SQLAlchemy's create_async_engine pool kwargs.
+    # Defaults match the previous hard-coded values — no behaviour change
+    # unless explicitly overridden via environment variables.
+    database_pool_size: int = 10
+    database_max_overflow: int = 20
+    database_pool_timeout: int = 30
+    database_pool_recycle: int = 1800  # 30 minutes
+
+    # -----------------------------------------------------------------------
     # JWT
     # -----------------------------------------------------------------------
     jwt_secret_key: SecretStr | None = None
@@ -201,7 +212,7 @@ class Settings(BaseSettings):
         Prevent accidental use of an insecurely low cost factor.
         12 is the recommended minimum for 2024+ hardware.
         """
-        if v < 10:
+        if v < 12:
             raise ValueError(
                 f"BCRYPT_ROUNDS={v} is dangerously low. "
                 "Minimum recommended value is 12."
@@ -211,6 +222,27 @@ class Settings(BaseSettings):
                 f"BCRYPT_ROUNDS={v} is impractically high and will cause "
                 "severe request latency."
             )
+        return v
+
+    @field_validator("database_pool_size")
+    @classmethod
+    def validate_pool_size(cls, v: int) -> int:
+        """Prevent pool sizes that would exhaust or under-use the DB."""
+        if v < 1:
+            raise ValueError("DATABASE_POOL_SIZE must be at least 1.")
+        if v > 100:
+            raise ValueError(
+                f"DATABASE_POOL_SIZE={v} is unusually large. "
+                "Verify this is intentional."
+            )
+        return v
+
+    @field_validator("database_max_overflow")
+    @classmethod
+    def validate_max_overflow(cls, v: int) -> int:
+        """Reject negative overflow values."""
+        if v < 0:
+            raise ValueError("DATABASE_MAX_OVERFLOW must be >= 0.")
         return v
 
     @model_validator(mode="after")

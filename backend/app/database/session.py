@@ -39,10 +39,12 @@ engine: AsyncEngine = create_async_engine(
     settings.database_url_str,  # SecretStr.get_secret_value() via property
     echo=settings.debug,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    pool_timeout=30,
-    pool_recycle=1800,  # recycle connections after 30 min
+    # Pool settings are read from environment variables so they can be tuned
+    # per deployment without changing code. Defaults are conservative and safe.
+    pool_size=settings.database_pool_size,
+    max_overflow=settings.database_max_overflow,
+    pool_timeout=settings.database_pool_timeout,
+    pool_recycle=settings.database_pool_recycle,
 )
 
 # ---------------------------------------------------------------------------

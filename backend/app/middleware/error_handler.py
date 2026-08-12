@@ -109,10 +109,10 @@ def register_exception_handlers(app: FastAPI) -> None:
         Catch-all for unexpected exceptions.
 
         SECURITY: Never include exc details in the response body.
-        Log the full traceback server-side with the correlation ID.
+        Log only sanitized metadata with the correlation ID.
         """
         request_id = getattr(request.state, "request_id", "")
-        logger.opt(exception=True).error(
+        logger.error(
             f"Unhandled exception on {request.method} {request.url.path}",
             request_id=request_id,
             exc_type=type(exc).__name__,

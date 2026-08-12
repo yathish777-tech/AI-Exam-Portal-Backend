@@ -26,12 +26,29 @@ from app.models.user import User  # noqa: F401
 from app.models.session import UserSession  # noqa: F401
 from app.models.otp import PasswordResetOTP  # noqa: F401
 
+# --- Phase 3: Exam portal models ---
+# Import in dependency order: Exam first, then its children.
+from app.models.exam import Exam  # noqa: F401
+from app.models.question import Question  # noqa: F401
+from app.models.exam_candidate import ExamCandidate  # noqa: F401
+from app.models.exam_attempt import ExamAttempt  # noqa: F401
+from app.models.submission import Submission  # noqa: F401
+from app.models.exam_result import ExamResult  # noqa: F401
+
 __all__ = [
     "Base",
+    # Auth
     "Role",
     "Permission",
     "RolePermission",
     "User",
     "UserSession",
     "PasswordResetOTP",
+    # Exam portal
+    "Exam",
+    "Question",
+    "ExamCandidate",
+    "ExamAttempt",
+    "Submission",
+    "ExamResult",
 ]
