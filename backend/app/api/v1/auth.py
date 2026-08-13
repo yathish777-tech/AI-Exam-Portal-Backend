@@ -31,6 +31,7 @@ Cookie design:
 from __future__ import annotations
 
 from fastapi import APIRouter, Cookie, Depends, Request, Response
+from fastapi.encoders import jsonable_encoder
 from starlette.datastructures import URL
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -256,12 +257,12 @@ async def login(
 
     return JSONResponse(
         status_code=200,
-        content=AuthResponse(
+        content=jsonable_encoder(AuthResponse(
             success=True,
             message="Login successful.",
             data=token_data.model_dump(),
             user=user,
-        ).model_dump(),
+        )),
         headers={
             REQUEST_ID_HEADER: get_request_id(request),
             "Set-Cookie": response.headers.get("set-cookie", ""),
