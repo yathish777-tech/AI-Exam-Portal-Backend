@@ -6,7 +6,7 @@ Pydantic v2 schemas for candidate assignment endpoints.
 SECURITY NOTES:
 - `candidate_ids` is the ONLY accepted field — no other user fields.
 - Candidates cannot assign themselves (enforced at service layer).
-- Response includes candidate email for display — no password_hash or
+- Response includes candidate email for display — no credential digests or
   other sensitive fields.
 """
 
@@ -59,7 +59,7 @@ class CandidateItem(BaseModel):
     """
     A single candidate in the exam candidates list.
 
-    SECURITY: Only email and UUID are returned — never password_hash.
+    SECURITY: Only email and UUID are returned.
     """
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")

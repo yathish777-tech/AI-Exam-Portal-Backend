@@ -415,7 +415,7 @@ async def logout_all(
     summary="Get current authenticated user",
     description=(
         "Return the profile of the currently authenticated user. "
-        "Never returns password_hash, refresh tokens, or secrets."
+        "Never returns internal credential digests, refresh tokens, or secrets."
     ),
 )
 @limiter.limit("30/minute")

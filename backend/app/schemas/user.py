@@ -5,7 +5,7 @@ Pydantic v2 user-related schemas.
 
 These schemas are used internally (between service layers) and
 for responses. The `UserPublic` schema is the safe representation
-returned to API clients — it never includes password_hash.
+returned to API clients.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from app.core.constants import RoleName
 class UserPublic(BaseModel):
     """
     Safe public representation of a user.
-    Never includes password_hash or internal secrets.
+    Never includes internal credential digests or secrets.
     """
 
     model_config = ConfigDict(from_attributes=True)

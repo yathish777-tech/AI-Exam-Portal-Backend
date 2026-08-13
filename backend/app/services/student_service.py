@@ -23,8 +23,6 @@ from app.models.exam import Exam
 from app.models.exam_attempt import ExamAttempt
 from app.models.exam_candidate import ExamCandidate
 from app.models.exam_result import ExamResult
-from app.repositories.result_repository import ResultRepository
-from app.repositories.candidate_repository import CandidateRepository
 from app.schemas.student import (
     StudentExamListResponse,
     StudentExamSummary,
@@ -40,7 +38,6 @@ class StudentService:
 
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
-        self._result_repo = ResultRepository(db)
         self._user_service = UserService(db)
 
     async def get_profile(self, candidate_id: uuid.UUID) -> StudentProfileResponse:

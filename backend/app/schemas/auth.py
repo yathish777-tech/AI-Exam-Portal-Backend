@@ -11,7 +11,7 @@ SECURITY NOTES:
 - Email is normalized (lowercase, stripped) at the validator level.
 - Role in SignupRequest is restricted to CANDIDATE — users cannot
   self-assign ADMIN or INTERVIEWER roles.
-- No password_hash, refresh_token_hash, or OTP values appear in responses.
+- No internal credential digests or OTP values appear in responses.
 """
 
 from __future__ import annotations
@@ -270,7 +270,7 @@ class UserResponse(BaseModel):
     """
     Safe user representation for API responses.
 
-    NEVER includes: password_hash, refresh_token_hash, or any secret.
+    NEVER includes internal credential digests or secrets.
     """
 
     model_config = ConfigDict(from_attributes=True, extra="forbid")
