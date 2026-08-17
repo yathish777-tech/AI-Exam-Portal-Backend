@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import List
+from uuid import UUID
 
 from sqlalchemy import and_
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -25,11 +27,11 @@ def get_exams(db: Session) -> List[models.Exam]:
     return db.query(models.Exam).order_by(models.Exam.created_at.desc()).all()
 
 
-def get_exam(db: Session, exam_id: int) -> models.Exam | None:
+def get_exam(db: Session, exam_id: UUID) -> models.Exam | None:
     return db.query(models.Exam).filter(models.Exam.id == exam_id).first()
 
 
-def update_exam(db: Session, exam_id: int, exam: schemas.ExamUpdate) -> models.Exam | None:
+def update_exam(db: Session, exam_id: UUID, exam: schemas.ExamUpdate) -> models.Exam | None:
     db_exam = get_exam(db, exam_id)
     if not db_exam:
         return None
@@ -42,7 +44,7 @@ def update_exam(db: Session, exam_id: int, exam: schemas.ExamUpdate) -> models.E
     return db_exam
 
 
-def delete_exam(db: Session, exam_id: int) -> bool:
+def delete_exam(db: Session, exam_id: UUID) -> bool:
     db_exam = get_exam(db, exam_id)
     if not db_exam:
         return False
@@ -51,7 +53,7 @@ def delete_exam(db: Session, exam_id: int) -> bool:
     return True
 
 
-def publish_exam(db: Session, exam_id: int) -> models.Exam | None:
+def publish_exam(db: Session, exam_id: UUID) -> models.Exam | None:
     db_exam = get_exam(db, exam_id)
     if not db_exam:
         return None
@@ -62,7 +64,7 @@ def publish_exam(db: Session, exam_id: int) -> models.Exam | None:
     return db_exam
 
 
-def schedule_exam(db: Session, exam_id: int, scheduled_at: datetime) -> models.Exam | None:
+def schedule_exam(db: Session, exam_id: UUID, scheduled_at: datetime) -> models.Exam | None:
     db_exam = get_exam(db, exam_id)
     if not db_exam:
         return None
@@ -73,7 +75,7 @@ def schedule_exam(db: Session, exam_id: int, scheduled_at: datetime) -> models.E
     return db_exam
 
 
-def create_question(db: Session, exam_id: int, question: schemas.QuestionCreate) -> models.Question:
+def create_question(db: Session, exam_id: UUID, question: schemas.QuestionCreate) -> models.Question:
     exam = get_exam(db, exam_id)
     if not exam:
         raise ValueError("Exam not found")
@@ -93,15 +95,15 @@ def create_question(db: Session, exam_id: int, question: schemas.QuestionCreate)
     return db_question
 
 
-def get_questions(db: Session, exam_id: int) -> List[models.Question]:
+def get_questions(db: Session, exam_id: UUID) -> List[models.Question]:
     return db.query(models.Question).filter(models.Question.exam_id == exam_id).all()
 
 
-def get_question(db: Session, question_id: int) -> models.Question | None:
+def get_question(db: Session, question_id: UUID) -> models.Question | None:
     return db.query(models.Question).filter(models.Question.id == question_id).first()
 
 
-def update_question(db: Session, question_id: int, question: schemas.QuestionUpdate) -> models.Question | None:
+def update_question(db: Session, question_id: UUID, question: schemas.QuestionUpdate) -> models.Question | None:
     db_question = get_question(db, question_id)
     if not db_question:
         return None
@@ -119,7 +121,7 @@ def update_question(db: Session, question_id: int, question: schemas.QuestionUpd
     return db_question
 
 
-def delete_question(db: Session, question_id: int) -> bool:
+def delete_question(db: Session, question_id: UUID) -> bool:
     db_question = get_question(db, question_id)
     if not db_question:
         return False
@@ -137,11 +139,11 @@ def create_candidate(db: Session, candidate: schemas.CandidateCreate) -> models.
     return db_candidate
 
 
-def get_candidate(db: Session, candidate_id: int) -> models.Candidate | None:
+def get_candidate(db: Session, candidate_id: UUID) -> models.Candidate | None:
     return db.query(models.Candidate).filter(models.Candidate.id == candidate_id).first()
 
 
-def assign_candidate(db: Session, exam_id: int, candidate_id: int) -> models.ExamCandidate:
+def assign_candidate(db: Session, exam_id: UUID, candidate_id: UUID) -> models.ExamCandidate:
     exam = get_exam(db, exam_id)
     candidate = get_candidate(db, candidate_id)
     if not exam or not candidate:
@@ -162,7 +164,7 @@ def assign_candidate(db: Session, exam_id: int, candidate_id: int) -> models.Exa
     return assignment
 
 
-def remove_candidate(db: Session, exam_id: int, candidate_id: int) -> bool:
+def remove_candidate(db: Session, exam_id: UUID, candidate_id: UUID) -> bool:
     assignment = (
         db.query(models.ExamCandidate)
         .filter(and_(models.ExamCandidate.exam_id == exam_id, models.ExamCandidate.candidate_id == candidate_id))
@@ -175,7 +177,7 @@ def remove_candidate(db: Session, exam_id: int, candidate_id: int) -> bool:
     return True
 
 
-def get_assigned_candidates(db: Session, exam_id: int) -> List[models.Candidate]:
+def get_assigned_candidates(db: Session, exam_id: UUID) -> List[models.Candidate]:
     assignments = (
         db.query(models.ExamCandidate)
         .filter(models.ExamCandidate.exam_id == exam_id)
@@ -184,7 +186,7 @@ def get_assigned_candidates(db: Session, exam_id: int) -> List[models.Candidate]
     return [assignment.candidate for assignment in assignments]
 
 
-def start_exam(db: Session, exam_id: int, candidate_id: int) -> models.ExamAttempt:
+def start_exam(db: Session, exam_id: UUID, candidate_id: UUID) -> models.ExamAttempt:
     exam = get_exam(db, exam_id)
     candidate = get_candidate(db, candidate_id)
     if not exam or not candidate:
@@ -220,11 +222,11 @@ def start_exam(db: Session, exam_id: int, candidate_id: int) -> models.ExamAttem
     return attempt
 
 
-def get_attempt(db: Session, attempt_id: int) -> models.ExamAttempt | None:
+def get_attempt(db: Session, attempt_id: UUID) -> models.ExamAttempt | None:
     return db.query(models.ExamAttempt).filter(models.ExamAttempt.id == attempt_id).first()
 
 
-def save_answer(db: Session, attempt_id: int, question_id: int, selected_option: str) -> models.AttemptAnswer:
+def save_answer(db: Session, attempt_id: UUID, question_id: UUID, selected_option: str) -> models.AttemptAnswer:
     attempt = get_attempt(db, attempt_id)
     if not attempt:
         raise ValueError("Attempt not found")
@@ -233,30 +235,34 @@ def save_answer(db: Session, attempt_id: int, question_id: int, selected_option:
     if not question:
         raise ValueError("Question not found")
 
-    existing = (
-        db.query(models.AttemptAnswer)
-        .filter(and_(models.AttemptAnswer.exam_attempt_id == attempt_id, models.AttemptAnswer.question_id == question_id))
-        .first()
+    is_correct = (selected_option == question.correct_option)
+
+    # High-performance PostgreSQL Upsert Logic to prevent race conditions
+    stmt = insert(models.AttemptAnswer).values(
+        exam_attempt_id=attempt_id,
+        question_id=question_id,
+        selected_option=selected_option,
+        is_correct=is_correct
     )
 
-    if existing:
-        existing.selected_option = selected_option
-        existing.is_correct = selected_option == question.correct_option
-    else:
-        existing = models.AttemptAnswer(
-            exam_attempt_id=attempt_id,
-            question_id=question_id,
-            selected_option=selected_option,
-            is_correct=selected_option == question.correct_option,
+    stmt = stmt.on_conflict_do_update(
+        constraint='uq_attempt_question',
+        set_=dict(
+            selected_option=stmt.excluded.selected_option,
+            is_correct=stmt.excluded.is_correct
         )
-        db.add(existing)
+    )
 
+    db.execute(stmt)
     db.commit()
-    db.refresh(existing)
-    return existing
+
+    return db.query(models.AttemptAnswer).filter(
+        and_(models.AttemptAnswer.exam_attempt_id == attempt_id, 
+             models.AttemptAnswer.question_id == question_id)
+    ).first()
 
 
-def submit_exam(db: Session, attempt_id: int) -> models.ExamAttempt:
+def submit_exam(db: Session, attempt_id: UUID) -> models.ExamAttempt:
     attempt = get_attempt(db, attempt_id)
     if not attempt:
         raise ValueError("Attempt not found")
@@ -269,7 +275,7 @@ def submit_exam(db: Session, attempt_id: int) -> models.ExamAttempt:
     return attempt
 
 
-def calculate_result(db: Session, attempt_id: int) -> models.Result:
+def calculate_result(db: Session, attempt_id: UUID) -> models.Result:
     attempt = get_attempt(db, attempt_id)
     if not attempt:
         raise ValueError("Attempt not found")
@@ -304,9 +310,9 @@ def calculate_result(db: Session, attempt_id: int) -> models.Result:
     return result
 
 
-def get_result(db: Session, result_id: int) -> models.Result | None:
+def get_result(db: Session, result_id: UUID) -> models.Result | None:
     return db.query(models.Result).filter(models.Result.id == result_id).first()
 
 
-def get_result_by_attempt(db: Session, attempt_id: int) -> models.Result | None:
+def get_result_by_attempt(db: Session, attempt_id: UUID) -> models.Result | None:
     return db.query(models.Result).filter(models.Result.exam_attempt_id == attempt_id).first()

@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -27,7 +28,7 @@ def get_exams(db: Session = Depends(get_db)):
 
 
 @app.get("/exams/{exam_id}", response_model=schemas.ExamOut)
-def get_exam(exam_id: int, db: Session = Depends(get_db)):
+def get_exam(exam_id: UUID, db: Session = Depends(get_db)):
     exam = crud.get_exam(db, exam_id)
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -35,7 +36,7 @@ def get_exam(exam_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/exams/{exam_id}", response_model=schemas.ExamOut)
-def update_exam(exam_id: int, exam: schemas.ExamUpdate, db: Session = Depends(get_db)):
+def update_exam(exam_id: UUID, exam: schemas.ExamUpdate, db: Session = Depends(get_db)):
     updated = crud.update_exam(db, exam_id, exam)
     if not updated:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -43,7 +44,7 @@ def update_exam(exam_id: int, exam: schemas.ExamUpdate, db: Session = Depends(ge
 
 
 @app.delete("/exams/{exam_id}")
-def delete_exam(exam_id: int, db: Session = Depends(get_db)):
+def delete_exam(exam_id: UUID, db: Session = Depends(get_db)):
     deleted = crud.delete_exam(db, exam_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -51,7 +52,7 @@ def delete_exam(exam_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/exams/{exam_id}/publish", response_model=schemas.ExamOut)
-def publish_exam(exam_id: int, db: Session = Depends(get_db)):
+def publish_exam(exam_id: UUID, db: Session = Depends(get_db)):
     exam = crud.publish_exam(db, exam_id)
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -59,7 +60,7 @@ def publish_exam(exam_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/exams/{exam_id}/schedule", response_model=schemas.ExamOut)
-def schedule_exam(exam_id: int, payload: schemas.ScheduleExamRequest, db: Session = Depends(get_db)):
+def schedule_exam(exam_id: UUID, payload: schemas.ScheduleExamRequest, db: Session = Depends(get_db)):
     exam = crud.schedule_exam(db, exam_id, payload.scheduled_at)
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -67,7 +68,7 @@ def schedule_exam(exam_id: int, payload: schemas.ScheduleExamRequest, db: Sessio
 
 
 @app.post("/exams/{exam_id}/questions", response_model=schemas.QuestionOut, status_code=status.HTTP_201_CREATED)
-def create_question(exam_id: int, question: schemas.QuestionCreate, db: Session = Depends(get_db)):
+def create_question(exam_id: UUID, question: schemas.QuestionCreate, db: Session = Depends(get_db)):
     try:
         return crud.create_question(db, exam_id, question)
     except ValueError as exc:
@@ -75,12 +76,12 @@ def create_question(exam_id: int, question: schemas.QuestionCreate, db: Session 
 
 
 @app.get("/exams/{exam_id}/questions", response_model=List[schemas.QuestionOut])
-def get_questions(exam_id: int, db: Session = Depends(get_db)):
+def get_questions(exam_id: UUID, db: Session = Depends(get_db)):
     return crud.get_questions(db, exam_id)
 
 
 @app.put("/questions/{question_id}", response_model=schemas.QuestionOut)
-def update_question(question_id: int, question: schemas.QuestionUpdate, db: Session = Depends(get_db)):
+def update_question(question_id: UUID, question: schemas.QuestionUpdate, db: Session = Depends(get_db)):
     updated = crud.update_question(db, question_id, question)
     if not updated:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -88,7 +89,7 @@ def update_question(question_id: int, question: schemas.QuestionUpdate, db: Sess
 
 
 @app.delete("/questions/{question_id}")
-def delete_question(question_id: int, db: Session = Depends(get_db)):
+def delete_question(question_id: UUID, db: Session = Depends(get_db)):
     deleted = crud.delete_question(db, question_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -101,7 +102,7 @@ def create_candidate(candidate: schemas.CandidateCreate, db: Session = Depends(g
 
 
 @app.post("/exams/{exam_id}/candidates", response_model=schemas.CandidateOut)
-def assign_candidate(exam_id: int, payload: schemas.AssignCandidateRequest, db: Session = Depends(get_db)):
+def assign_candidate(exam_id: UUID, payload: schemas.AssignCandidateRequest, db: Session = Depends(get_db)):
     try:
         assignment = crud.assign_candidate(db, exam_id, payload.candidate_id)
         return assignment.candidate
@@ -110,7 +111,7 @@ def assign_candidate(exam_id: int, payload: schemas.AssignCandidateRequest, db: 
 
 
 @app.delete("/exams/{exam_id}/candidates/{candidate_id}")
-def remove_candidate(exam_id: int, candidate_id: int, db: Session = Depends(get_db)):
+def remove_candidate(exam_id: UUID, candidate_id: UUID, db: Session = Depends(get_db)):
     removed = crud.remove_candidate(db, exam_id, candidate_id)
     if not removed:
         raise HTTPException(status_code=404, detail="Candidate assignment not found")
@@ -118,7 +119,7 @@ def remove_candidate(exam_id: int, candidate_id: int, db: Session = Depends(get_
 
 
 @app.get("/exams/{exam_id}/candidates", response_model=List[schemas.CandidateOut])
-def get_assigned_candidates(exam_id: int, db: Session = Depends(get_db)):
+def get_assigned_candidates(exam_id: UUID, db: Session = Depends(get_db)):
     return crud.get_assigned_candidates(db, exam_id)
 
 
@@ -132,7 +133,7 @@ def start_exam(payload: schemas.StartExamRequest, db: Session = Depends(get_db))
 
 
 @app.get("/attempts/{attempt_id}", response_model=schemas.ExamAttemptOut)
-def get_attempt(attempt_id: int, db: Session = Depends(get_db)):
+def get_attempt(attempt_id: UUID, db: Session = Depends(get_db)):
     attempt = crud.get_attempt(db, attempt_id)
     if not attempt:
         raise HTTPException(status_code=404, detail="Attempt not found")
@@ -140,7 +141,7 @@ def get_attempt(attempt_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/attempts/{attempt_id}/answers", response_model=schemas.AttemptAnswerOut)
-def save_answer(attempt_id: int, payload: schemas.SaveAnswerRequest, db: Session = Depends(get_db)):
+def save_answer(attempt_id: UUID, payload: schemas.SaveAnswerRequest, db: Session = Depends(get_db)):
     try:
         return crud.save_answer(db, attempt_id, payload.question_id, payload.selected_option)
     except ValueError as exc:
@@ -148,7 +149,7 @@ def save_answer(attempt_id: int, payload: schemas.SaveAnswerRequest, db: Session
 
 
 @app.post("/attempts/{attempt_id}/submit", response_model=schemas.ExamAttemptOut)
-def submit_exam(attempt_id: int, db: Session = Depends(get_db)):
+def submit_exam(attempt_id: UUID, db: Session = Depends(get_db)):
     try:
         return crud.submit_exam(db, attempt_id)
     except ValueError as exc:
@@ -156,7 +157,7 @@ def submit_exam(attempt_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/results/calculate/{attempt_id}", response_model=schemas.ResultOut)
-def calculate_result(attempt_id: int, db: Session = Depends(get_db)):
+def calculate_result(attempt_id: UUID, db: Session = Depends(get_db)):
     try:
         return crud.calculate_result(db, attempt_id)
     except ValueError as exc:
@@ -164,7 +165,7 @@ def calculate_result(attempt_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/results/{result_id}", response_model=schemas.ResultOut)
-def get_result(result_id: int, db: Session = Depends(get_db)):
+def get_result(result_id: UUID, db: Session = Depends(get_db)):
     result = crud.get_result(db, result_id)
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
@@ -172,8 +173,31 @@ def get_result(result_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/attempts/{attempt_id}/result", response_model=schemas.ResultOut)
-def get_attempt_result(attempt_id: int, db: Session = Depends(get_db)):
+def get_attempt_result(attempt_id: UUID, db: Session = Depends(get_db)):
     result = crud.get_result_by_attempt(db, attempt_id)
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     return result
+
+
+@app.websocket("/ws/proctoring/{exam_attempt_id}")
+async def proctoring_endpoint(websocket: WebSocket, exam_attempt_id: UUID, db: Session = Depends(get_db)):
+    await websocket.accept()
+    try:
+        while True:
+            # Receive AI warning from the frontend browser
+            data = await websocket.receive_json()
+            
+            # Save it to the database
+            warning = models.ProctoringWarning(
+                exam_attempt_id=exam_attempt_id,
+                warning_type=data.get("warning_type", "UNKNOWN")
+            )
+            db.add(warning)
+            db.commit()
+            
+            # Here, the backend team will later add Redis to broadcast this to the Interviewer
+            print(f"Warning saved: {data.get('warning_type')}")
+            
+    except WebSocketDisconnect:
+        print(f"Client disconnected from exam attempt {exam_attempt_id}")
