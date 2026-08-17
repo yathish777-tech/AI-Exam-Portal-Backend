@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -21,7 +22,7 @@ class ExamUpdate(BaseModel):
 
 
 class ExamOut(ExamBase):
-    id: int
+    id: UUID
     total_marks: int
     status: str
     scheduled_at: Optional[datetime] = None
@@ -66,8 +67,8 @@ class QuestionUpdate(BaseModel):
 
 
 class QuestionOut(QuestionBase):
-    id: int
-    exam_id: int
+    id: UUID
+    exam_id: UUID
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -83,29 +84,29 @@ class CandidateCreate(CandidateBase):
 
 
 class CandidateOut(CandidateBase):
-    id: int
+    id: UUID
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
 class AssignCandidateRequest(BaseModel):
-    candidate_id: int
+    candidate_id: UUID
 
 
 class StartExamRequest(BaseModel):
-    exam_id: int
-    candidate_id: int
+    exam_id: UUID
+    candidate_id: UUID
 
 
 class SaveAnswerRequest(BaseModel):
-    question_id: int
+    question_id: UUID
     selected_option: str = Field(..., min_length=1)
 
 
 class AttemptAnswerOut(BaseModel):
-    id: int
-    question_id: int
+    id: UUID
+    question_id: UUID
     selected_option: Optional[str]
     is_correct: bool
 
@@ -113,9 +114,9 @@ class AttemptAnswerOut(BaseModel):
 
 
 class ExamAttemptOut(BaseModel):
-    id: int
-    exam_id: int
-    candidate_id: int
+    id: UUID
+    exam_id: UUID
+    candidate_id: UUID
     started_at: datetime
     submitted_at: Optional[datetime]
     status: str
@@ -127,10 +128,10 @@ class ExamAttemptOut(BaseModel):
 
 
 class ResultOut(BaseModel):
-    id: int
-    exam_id: int
-    candidate_id: int
-    exam_attempt_id: int
+    id: UUID
+    exam_id: UUID
+    candidate_id: UUID
+    exam_attempt_id: UUID
     score: int
     total_marks: int
     percentage: int
