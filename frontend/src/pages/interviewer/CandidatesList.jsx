@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Eye, ShieldCheck, ShieldAlert, Inbox } from 'lucide-react';
 import Modal from '../../components/common/Modal';
+import Avatar from '../../components/common/Avatar';
 import { useData } from '../../context/DataContext';
 
 export default function CandidatesList() {
@@ -76,7 +77,12 @@ export default function CandidatesList() {
               <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                 {filtered.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">{c.name}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900">
+                      <div className="flex items-center space-x-2.5">
+                        <Avatar name={c.name} size="sm" />
+                        <span>{c.name}</span>
+                      </div>
+                    </td>
                     <td className="py-3.5 px-4 font-semibold text-slate-600">{c.rollNo || 'REG-PENDING'}</td>
                     <td className="py-3.5 px-4 text-slate-500">{c.department || c.domain || 'Engineering'}</td>
                     <td className="py-3.5 px-4 text-center font-bold text-blue-600 text-sm">
@@ -122,9 +128,12 @@ export default function CandidatesList() {
           title={`Candidate Audit: ${selectedCandidate.name}`}
         >
           <div className="space-y-4 text-xs text-slate-800">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-0.5">
-              <div className="font-bold text-slate-900 text-sm">{selectedCandidate.name}</div>
-              <div className="text-slate-500">Roll No: {selectedCandidate.rollNo || 'N/A'} • Dept: {selectedCandidate.department || 'Engineering'}</div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center space-x-3">
+              <Avatar name={selectedCandidate.name} size="md" />
+              <div className="space-y-0.5">
+                <div className="font-bold text-slate-900 text-sm">{selectedCandidate.name}</div>
+                <div className="text-slate-500">Roll No: {selectedCandidate.rollNo || 'N/A'} • Dept: {selectedCandidate.department || 'Engineering'}</div>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

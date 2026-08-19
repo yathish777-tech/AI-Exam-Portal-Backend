@@ -88,8 +88,74 @@ export default function MCQTestPage() {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  // Ref to hold simulation overrides so manual testing buttons work reliably
+  const simulationHoldUntilRef = useRef(0);
+
+  // Ref to track if exam has concluded to prevent background loops/warnings
+  const isExamFinishedRef = useRef(false);
+
+  // Helper to cleanly stop ALL webcam and audio media stream tracks and release hardware
+  const stopAllMediaTracks = () => {
+    try {
+      if (streamRef.current) {
+        const tracks = streamRef.current.getTracks();
+        tracks.forEach((track) => {
+          try {
+            track.stop();
+            track.enabled = false;
+          } catch (e) {
+            console.warn('Error stopping media track:', e);
+          }
+        });
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        if (videoRef.current.srcObject) {
+          try {
+            const stream = videoRef.current.srcObject;
+            if (stream && stream.getTracks) {
+              stream.getTracks().forEach((track) => {
+                try {
+                  track.stop();
+                  track.enabled = false;
+                } catch (e) {}
+              });
+            }
+          } catch (e) {}
+          videoRef.current.srcObject = null;
+        }
+      }
+    } catch (err) {
+      console.warn('Error during stream release:', err);
+    }
+    setCameraActive(false);
+  };
+
+  // Comprehensive Exam Session End Cleanup Handler
+  const performExamCleanup = () => {
+    isExamFinishedRef.current = true;
+
+    // 1. Immediately stop hardware camera & mic media tracks
+    stopAllMediaTracks();
+
+    // 2. Clear all background interval timers
+    if (noFaceTimerRef.current) {
+      clearInterval(noFaceTimerRef.current);
+      noFaceTimerRef.current = null;
+    }
+
+    // 3. Exit fullscreen mode if currently active
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+  };
+
   // Helper to record a violation
   const recordViolation = (type, description) => {
+    if (isExamFinishedRef.current) return;
+
     const now = Date.now();
     // Debounce duplicate warnings within 2 seconds
     if (now - lastWarningTimeRef.current < 2000) return;
@@ -115,30 +181,10 @@ export default function MCQTestPage() {
       if (updated >= maxWarnings) {
         setTimeout(() => {
           handleFinalSubmit('Auto-Submitted: Maximum Violation Limit Reached (3/3)');
-        }, 1200);
+        }, 800);
       }
       return updated;
     });
-  };
-
-  // Ref to hold simulation overrides so manual testing buttons work reliably
-  const simulationHoldUntilRef = useRef(0);
-
-  // Helper to cleanly stop webcam media stream and release hardware camera
-  const stopCameraStream = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        try {
-          track.stop();
-          track.enabled = false;
-        } catch (e) {}
-      });
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setCameraActive(false);
   };
 
   // 1. Initialize & Monitor Webcam
@@ -146,29 +192,34 @@ export default function MCQTestPage() {
     let isMounted = true;
 
     const startWebcam = async () => {
+      if (isExamFinishedRef.current) return;
       try {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { width: { ideal: 640 }, height: { ideal: 480 } },
             audio: false,
           });
+          if (!isMounted || isExamFinishedRef.current) {
+            stream.getTracks().forEach((track) => track.stop());
+            return;
+          }
           streamRef.current = stream;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
           }
-          if (isMounted) setCameraActive(true);
+          setCameraActive(true);
 
           // Monitor camera disconnection / track ended
           const videoTrack = stream.getVideoTracks()[0];
           if (videoTrack) {
             videoTrack.onended = () => {
-              if (isMounted) {
+              if (isMounted && !isExamFinishedRef.current) {
                 setCameraActive(false);
                 recordViolation('Camera Disconnected', 'Webcam stream was disconnected or disabled!');
               }
             };
             videoTrack.onmute = () => {
-              if (isMounted) {
+              if (isMounted && !isExamFinishedRef.current) {
                 recordViolation('Camera Muted', 'Webcam video stream was muted by device!');
               }
             };
@@ -176,7 +227,7 @@ export default function MCQTestPage() {
         }
       } catch (err) {
         console.warn('Webcam access error or permission denied:', err);
-        if (isMounted) {
+        if (isMounted && !isExamFinishedRef.current) {
           setCameraActive(true); // Fallback active for sandbox preview
         }
       }
@@ -186,7 +237,7 @@ export default function MCQTestPage() {
 
     return () => {
       isMounted = false;
-      stopCameraStream();
+      performExamCleanup();
     };
   }, []);
 
@@ -455,15 +506,8 @@ export default function MCQTestPage() {
 
   // 7. Final Exam Submission Handler
   const handleFinalSubmit = (submissionReason) => {
-    // 1. Stop all camera media streams cleanly & release hardware
-    stopCameraStream();
-
-    // 2. Exit fullscreen mode if active
-    try {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    } catch (e) {}
+    // 1. Immediately perform complete media and proctoring cleanup
+    performExamCleanup();
 
     // Compute evaluation
     let correctCount = 0;
@@ -546,19 +590,19 @@ export default function MCQTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] p-3 sm:p-5 lg:p-6 space-y-5 max-w-7xl mx-auto text-slate-800 selection:bg-blue-100">
+    <div className="min-h-screen bg-[#F9FAF9] p-3 sm:p-5 lg:p-6 space-y-5 max-w-7xl mx-auto text-slate-800 selection:bg-emerald-100">
       
       {/* Offscreen Canvas for Frame Capture */}
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Top Header Bar */}
-      <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-4 border border-emerald-100/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase">
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase">
               {interviewData.code || 'DSA-CS301'} • PROCTORED EXAM
             </span>
-            <span className="text-[10px] font-bold text-slate-500">
+            <span className="text-[10px] font-medium text-slate-500">
               Candidate: {user?.name || 'Aarav Sharma'}
             </span>
           </div>
@@ -569,9 +613,9 @@ export default function MCQTestPage() {
 
         {/* Live Timer & Proctor Badge */}
         <div className="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md font-semibold text-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-            <span>AI Proctor Lock Active</span>
+          <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md font-semibold text-xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Proctor Monitoring Active</span>
           </div>
 
           <div
@@ -592,10 +636,10 @@ export default function MCQTestPage() {
         
         {/* Left / Center 3 Columns: MCQ Questions View */}
         <div className="lg:col-span-3 space-y-5">
-          <div className="bg-white rounded-xl p-5 sm:p-7 border border-slate-200/80 shadow-xs space-y-6 text-slate-800">
+          <div className="bg-white rounded-xl p-5 sm:p-7 border border-emerald-100/80 shadow-xs space-y-6 text-slate-800">
             
             {/* Header & Question Navigation */}
-            <div className="space-y-3 border-b border-slate-200 pb-4">
+            <div className="space-y-3 border-b border-slate-100 pb-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Question {currentIndex + 1} of {questions.length}
@@ -617,7 +661,7 @@ export default function MCQTestPage() {
               {/* Progress Bar */}
               <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200">
                 <div
-                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  className="bg-emerald-600 h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
                 />
               </div>
@@ -640,14 +684,14 @@ export default function MCQTestPage() {
                     onClick={() => handleSelectOption(optIdx)}
                     className={`w-full p-3.5 rounded-lg text-left border text-xs font-medium transition-colors flex items-center justify-between ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50 text-slate-900 font-bold shadow-xs'
-                        : 'border-slate-200/80 hover:border-slate-300 bg-slate-50 text-slate-700'
+                        ? 'border-emerald-600 bg-emerald-50 text-slate-900 font-bold shadow-xs'
+                        : 'border-slate-200 hover:border-emerald-300 bg-slate-50/70 text-slate-700'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
                       <span
                         className={`w-6 h-6 rounded flex items-center justify-center font-bold text-xs ${
-                          isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
+                          isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
                         }`}
                       >
                         {String.fromCharCode(65 + optIdx)}
@@ -655,14 +699,14 @@ export default function MCQTestPage() {
                       <span>{opt}</span>
                     </div>
 
-                    {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
+                    {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
             {/* Bottom Controls */}
-            <div className="pt-5 border-t border-slate-200 flex items-center justify-between flex-wrap gap-3">
+            <div className="pt-5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
               <button
                 onClick={clearResponse}
                 className="text-xs font-medium text-slate-500 hover:text-slate-800"
@@ -683,10 +727,10 @@ export default function MCQTestPage() {
                 {currentIndex < questions.length - 1 ? (
                   <button
                     onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                    className="px-4 py-1.5 bg-[#374151] hover:bg-[#1F2937] text-white font-medium text-xs rounded-md shadow-xs transition-colors flex items-center space-x-1"
+                    className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-md shadow-xs transition-colors flex items-center space-x-1"
                   >
                     <span>Next Question</span>
-                    <ChevronRight className="w-4 h-4 text-blue-400" />
+                    <ChevronRight className="w-4 h-4 text-emerald-400" />
                   </button>
                 ) : (
                   <button
@@ -707,10 +751,10 @@ export default function MCQTestPage() {
         <div className="space-y-4">
           
           {/* Live Webcam & Face Status Box */}
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+          <div className="bg-white rounded-xl p-4 border border-emerald-100/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-900">
-                <Camera className="w-4 h-4 text-blue-600" />
+                <Camera className="w-4 h-4 text-emerald-600" />
                 <span>Live Proctoring Feed</span>
               </div>
               <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
@@ -731,9 +775,9 @@ export default function MCQTestPage() {
               />
 
               {!cameraActive && (
-                <div className="text-center p-3 text-red-400 space-y-1">
-                  <VideoOff className="w-8 h-8 mx-auto" />
-                  <p className="text-[11px] font-bold">Camera Feed Interrupted</p>
+                <div className="text-center p-3 text-slate-400 space-y-1">
+                  <VideoOff className="w-8 h-8 mx-auto text-slate-500" />
+                  <p className="text-[11px] font-bold">Camera Stream Inactive</p>
                 </div>
               )}
 
@@ -745,7 +789,7 @@ export default function MCQTestPage() {
                     <span>REC • 30FPS</span>
                   </div>
 
-                  {/* Requirement 2: Status Badges */}
+                  {/* Status Badges */}
                   {faceStatus === 'detected' && (
                     <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded shadow-xs flex items-center space-x-1">
                       <span>✅ Face Detected</span>
@@ -758,7 +802,7 @@ export default function MCQTestPage() {
                   )}
                   {faceStatus === 'multi_face' && (
                     <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded shadow-xs animate-pulse flex items-center space-x-1">
-                      <span>⚠ Multiple Faces Detected</span>
+                      <span>⚠ Multiple Faces</span>
                     </span>
                   )}
                 </div>
@@ -767,7 +811,7 @@ export default function MCQTestPage() {
 
             {/* Violation Counters Display */}
             <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium text-[11px]">Proctor Violations:</span>
+              <span className="text-slate-600 font-medium text-[11px]">Proctor Violations:</span>
               <span className={`font-bold px-2 py-0.5 rounded text-xs ${
                 warningCount === 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
               }`}>
@@ -775,7 +819,7 @@ export default function MCQTestPage() {
               </span>
             </div>
 
-            {/* Test Simulation Buttons */}
+            {/* Test Simulation Controls */}
             <div className="pt-1 space-y-1.5">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                 Proctor Testing Controls
@@ -801,7 +845,7 @@ export default function MCQTestPage() {
                 </button>
                 <button
                   onClick={triggerSimulatedTabSwitch}
-                  className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded border border-blue-200 font-medium"
+                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-200 font-medium"
                 >
                   Test Tab Switch
                 </button>
@@ -811,7 +855,7 @@ export default function MCQTestPage() {
           </div>
 
           {/* Question Navigator Palette */}
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs space-y-3 text-slate-800">
+          <div className="bg-white rounded-xl p-4 border border-emerald-100/80 shadow-xs space-y-3 text-slate-800">
             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               Question Navigator
             </h4>
@@ -831,7 +875,7 @@ export default function MCQTestPage() {
                 <span>Unvisited ({questions.length - answeredCount})</span>
               </div>
               <div className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs bg-blue-600" />
+                <span className="w-2.5 h-2.5 rounded-xs bg-slate-900" />
                 <span>Current</span>
               </div>
             </div>
@@ -845,7 +889,7 @@ export default function MCQTestPage() {
 
                 let btnBg = 'bg-slate-100 text-slate-700 hover:bg-slate-200';
                 if (isCurrent) {
-                  btnBg = 'bg-blue-600 text-white font-bold ring-2 ring-blue-300';
+                  btnBg = 'bg-slate-900 text-white font-bold ring-2 ring-emerald-500';
                 } else if (isMarked) {
                   btnBg = 'bg-amber-500 text-white font-bold';
                 } else if (isAnswered) {

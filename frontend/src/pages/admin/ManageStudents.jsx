@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Plus, Trash2, PauseCircle, CheckCircle2, Inbox } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/common/Modal';
+import Avatar from '../../components/common/Avatar';
 import { useData } from '../../context/DataContext';
 
 export default function ManageStudents() {
@@ -112,8 +113,13 @@ export default function ManageStudents() {
                 {filtered.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{s.name}</div>
-                      <div className="text-[11px] text-slate-400">{s.email}</div>
+                      <div className="flex items-center space-x-2.5">
+                        <Avatar name={s.name} size="sm" />
+                        <div>
+                          <div className="font-bold text-slate-900">{s.name}</div>
+                          <div className="text-[11px] text-slate-400">{s.email}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-slate-600">{s.rollNo || 'REG-PENDING'}</td>
                     <td className="py-3.5 px-4 text-slate-500">{s.department || 'Engineering'}</td>

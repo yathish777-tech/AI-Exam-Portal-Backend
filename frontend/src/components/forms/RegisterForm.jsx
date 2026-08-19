@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, User, BookOpen, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, BookOpen, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export default function RegisterForm({ role = 'student' }) {
+export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [domain, setDomain] = useState('Data Structures & Algorithms');
+  const [department, setDepartment] = useState('Computer Science & Engineering');
+  const [rollNo, setRollNo] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,14 +16,11 @@ export default function RegisterForm({ role = 'student' }) {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const getErrorMessage = (err) => {
-    const detail = err?.response?.data?.detail;
-    if (typeof detail === 'string') return detail;
-    if (Array.isArray(detail)) return detail[0]?.msg || 'Registration failed.';
-    return err?.response?.data?.message || err?.message || 'Registration failed.';
-  };
+  // Validation
+  const hasMinLength = password.length >= 8;
+  const passwordsMatch = password && password === confirmPassword;
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
 
@@ -31,40 +29,43 @@ export default function RegisterForm({ role = 'student' }) {
       return;
     }
 
+    if (!hasMinLength) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
 
-    if (password.length < 10) {
-      setError('Password should be at least 10 characters long.');
-      return;
-    }
-
     setLoading(true);
-    try {
-      await register({ name, email, password, domain }, role);
-      setLoading(false);
-      navigate(`/${role}/dashboard`);
-    } catch (err) {
-      setLoading(false);
-      setError(getErrorMessage(err));
-    }
+    setTimeout(() => {
+      try {
+        register({ name, email, department, rollNo });
+        setLoading(false);
+        navigate('/student/dashboard');
+      } catch (err) {
+        setError(err.message || 'Registration failed. Please try again.');
+        setLoading(false);
+      }
+    }, 400);
   };
 
   return (
     <div className="bg-white rounded-xl shadow-xs border border-slate-200/80 p-6 sm:p-8 max-w-md w-full mx-auto text-slate-800">
       <div className="text-center mb-6">
         <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-          {role === 'student' ? 'Register Student Account' : 'Register Interviewer Account'}
+          Student Examination Registration
         </h2>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Create credentials to access the university examination network
+        <p className="text-xs text-slate-500 mt-1">
+          Register with your institutional credentials to enroll in upcoming assessments.
         </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md">
+        <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start space-x-2">
+          <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -72,8 +73,8 @@ export default function RegisterForm({ role = 'student' }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">
-            Full Name
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
+            Candidate Full Name
           </label>
           <div className="relative">
             <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -82,7 +83,7 @@ export default function RegisterForm({ role = 'student' }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Aarav Sharma"
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 rounded-md focus:outline-hidden focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
               required
             />
           </div>
@@ -90,8 +91,8 @@ export default function RegisterForm({ role = 'student' }) {
 
         {/* Email */}
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">
-            University Email
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
+            University Institutional Email
           </label>
           <div className="relative">
             <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -99,40 +100,49 @@ export default function RegisterForm({ role = 'student' }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="student@university.edu"
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 rounded-md focus:outline-hidden focus:border-blue-500"
+              placeholder="e.g. aarav.s@university.edu"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
               required
             />
           </div>
         </div>
 
-        {/* Domain if Interviewer */}
-        {role === 'interviewer' && (
+        {/* Department & Roll Number */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
-              Assigned Domain / Subject Area
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Roll / Reg No.
             </label>
-            <div className="relative">
-              <BookOpen className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
-              <select
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-md focus:outline-hidden focus:border-blue-500"
-              >
-                <option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
-                <option value="Artificial Intelligence & ML">Artificial Intelligence & ML</option>
-                <option value="Database Management Systems">Database Management Systems</option>
-                <option value="Network Security & Cryptography">Network Security & Cryptography</option>
-                <option value="Full Stack Web Development">Full Stack Web Development</option>
-              </select>
-            </div>
+            <input
+              type="text"
+              value={rollNo}
+              onChange={(e) => setRollNo(e.target.value)}
+              placeholder="e.g. 2026-CS-042"
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
+            />
           </div>
-        )}
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Department
+            </label>
+            <select
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              className="w-full px-2.5 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
+            >
+              <option value="Computer Science & Engineering">CSE</option>
+              <option value="Information Technology">IT</option>
+              <option value="Electronics & Communication">ECE</option>
+              <option value="Data Science & AI">AI & DS</option>
+            </select>
+          </div>
+        </div>
 
         {/* Password */}
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">
-            Password
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
+            Password (min. 8 characters)
           </label>
           <div className="relative">
             <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -141,7 +151,7 @@ export default function RegisterForm({ role = 'student' }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 rounded-md focus:outline-hidden focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
               required
             />
           </div>
@@ -149,7 +159,7 @@ export default function RegisterForm({ role = 'student' }) {
 
         {/* Confirm Password */}
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             Confirm Password
           </label>
           <div className="relative">
@@ -159,7 +169,7 @@ export default function RegisterForm({ role = 'student' }) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 rounded-md focus:outline-hidden focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-lg focus:outline-hidden focus:border-emerald-600 focus:bg-white transition-colors"
               required
             />
           </div>
@@ -168,20 +178,24 @@ export default function RegisterForm({ role = 'student' }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 px-4 bg-[#374151] hover:bg-[#1F2937] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 mt-2"
+          className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-xs flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 mt-3"
         >
-          <span>{loading ? 'Creating Account...' : 'Complete Registration'}</span>
-          <ArrowRight className="w-4 h-4 text-blue-400" />
+          <span>{loading ? 'Registering Account...' : 'Complete Student Registration'}</span>
+          <ArrowRight className="w-4 h-4 text-emerald-400" />
         </button>
       </form>
 
-      <p className="text-center text-xs text-slate-500 mt-5">
-        Already have an account?{' '}
-        <Link to={`/${role}/login`} className="text-blue-600 font-semibold hover:underline">
-          Sign in
+      <div className="pt-4 mt-6 border-t border-slate-100 text-center text-xs space-y-2">
+        <p className="text-slate-600">
+          Already have a student account?{' '}
+          <Link to="/student/login" className="text-emerald-700 font-semibold hover:underline">
+            Sign In
+          </Link>
+        </p>
+        <Link to="/" className="block text-slate-400 hover:text-slate-600 text-xs">
+          ← Return to Homepage
         </Link>
-      </p>
+      </div>
     </div>
   );
 }
-

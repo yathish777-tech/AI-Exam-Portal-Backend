@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Shield,
   Eye,
@@ -18,273 +18,203 @@ import {
   Smartphone,
   Copy,
   Sliders,
+  KeyRound,
+  GraduationCap,
+  BookOpen,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 export default function LandingPage() {
-  const { switchRoleDemo } = useAuth();
-  const navigate = useNavigate();
-
-  const handleDemoLaunch = (role) => {
-    switchRoleDemo(role);
-    navigate(`/${role}/dashboard`);
-  };
-
   return (
-    <div className="space-y-20 pb-16 text-slate-100">
+    <div className="space-y-16 pb-16 font-sans text-slate-800 bg-[#F9FAF9]">
       
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-16 lg:pt-20 lg:pb-28">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-[#020617] to-[#020617] -z-10" />
-        
-        {/* Glow ambient accent */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-600/15 blur-3xl rounded-full pointer-events-none -z-10" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+      <section className="relative overflow-hidden pt-14 pb-16 lg:pt-18 lg:pb-20 border-b border-emerald-100/80 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           
-          {/* Top Badge */}
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-950/80 border border-blue-800/80 text-blue-300 text-xs font-semibold shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-            <span>Next-Gen University Examination & AI Proctoring Core</span>
+          {/* Subtle Institutional Badge */}
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-600" />
+            <span>Online Examination Infrastructure</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-[1.15]">
-            Streamline University Examinations with <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Secure AI Proctoring</span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight max-w-3xl mx-auto leading-tight">
+            Online Examination Portal
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto font-normal leading-relaxed">
-            Exam Portal combines automated MCQ generation from PDF question papers, multi-layered AI anti-cheating enforcement, and real-time university analytics.
+          <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
+            Conduct, manage, and complete examinations through a single platform with structured question management, automated scoring, and built-in session monitoring.
           </p>
 
-          {/* CTA Buttons */}
+          {/* Primary Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => handleDemoLaunch('student')}
-              className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-200 flex items-center justify-center space-x-2"
+            <Link
+              to="/student/login"
+              className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center space-x-2"
             >
-              <span>Explore Student Exam Demo</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+              <span>Student Examination Portal</span>
+              <ArrowRight className="w-4 h-4 text-emerald-100" />
+            </Link>
 
-            <button
-              onClick={() => handleDemoLaunch('interviewer')}
-              className="w-full sm:w-auto px-7 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-sm rounded-xl border border-slate-800 transition-all flex items-center justify-center space-x-2"
+            <Link
+              to="/interviewer/login"
+              className="w-full sm:w-auto px-6 py-2.5 bg-white hover:bg-emerald-50/50 text-slate-800 font-semibold text-xs rounded-lg border border-slate-200 transition-colors flex items-center justify-center space-x-2"
             >
-              <span>Interviewer PDF Upload Demo</span>
-            </button>
+              <span>Faculty Examiner Workstation</span>
+            </Link>
           </div>
 
-          {/* Interactive Hero Preview Frame */}
-          <div className="mt-12 max-w-5xl mx-auto bg-slate-900/90 rounded-2xl shadow-2xl border border-slate-800 p-4 sm:p-6 text-left relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-              <div className="flex items-center space-x-2">
-                <span className="w-3 h-3 rounded-full bg-rose-500" />
-                <span className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-xs font-bold text-slate-300 ml-2">Exam Portal - Live Proctoring Sandbox</span>
+          {/* System Capability Highlights */}
+          <div className="mt-10 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+            
+            <div className="bg-[#F9FAF9] rounded-xl p-4 border border-emerald-100/80 space-y-1.5">
+              <div className="flex items-center space-x-2 text-slate-900 font-semibold text-xs">
+                <FileCheck className="w-4 h-4 text-emerald-600" />
+                <span>Question Bank Management</span>
               </div>
-              <span className="px-2.5 py-0.5 bg-emerald-950/80 text-emerald-300 text-[10px] font-bold rounded-md uppercase border border-emerald-800/80">
-                AI Lock active
-              </span>
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                Upload question sets and conduct standardized computer-based assessments seamlessly.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              
-              {/* Feature Box 1 */}
-              <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800 space-y-2">
-                <div className="flex items-center space-x-2 text-blue-400 font-bold">
-                  <Eye className="w-4 h-4" />
-                  <span>360° Eye & Face Tracking</span>
-                </div>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Real-time pupil position detection alerts when candidate turns head or looks away from screen.
-                </p>
+            <div className="bg-[#F9FAF9] rounded-xl p-4 border border-emerald-100/80 space-y-1.5">
+              <div className="flex items-center space-x-2 text-slate-900 font-semibold text-xs">
+                <Laptop className="w-4 h-4 text-emerald-600" />
+                <span>Secure Exam Environment</span>
               </div>
-
-              {/* Feature Box 2 */}
-              <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800 space-y-2">
-                <div className="flex items-center space-x-2 text-indigo-400 font-bold">
-                  <Laptop className="w-4 h-4" />
-                  <span>Full Screen Lock & Guard</span>
-                </div>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Prevents tab switching, copy-pasting, multi-monitor extensions, and background application execution.
-                </p>
-              </div>
-
-              {/* Feature Box 3 */}
-              <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800 space-y-2">
-                <div className="flex items-center space-x-2 text-emerald-400 font-bold">
-                  <Zap className="w-4 h-4" />
-                  <span>Automated AI MCQ Conversion</span>
-                </div>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Professors drag and drop PDF question sets and AI instantly converts syllabus into calibrated MCQs.
-                </p>
-              </div>
-
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                Full-screen exam sandbox with focus tracking and copy/paste protection.
+              </p>
             </div>
+
+            <div className="bg-[#F9FAF9] rounded-xl p-4 border border-emerald-100/80 space-y-1.5">
+              <div className="flex items-center space-x-2 text-slate-900 font-semibold text-xs">
+                <Camera className="w-4 h-4 text-emerald-600" />
+                <span>Session Verification</span>
+              </div>
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                Optional camera verification to ensure candidate identity and presence during tests.
+              </p>
+            </div>
+
           </div>
 
         </div>
       </section>
 
-      {/* 2. PLATFORM OVERVIEW */}
+      {/* 2. THREE ROLE WORKFLOWS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Designed for University Rigor & Complete Integrity
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Role-Based Academic Portals
           </h2>
-          <p className="text-sm text-slate-400">
-            Exam Portal unifies candidates, professors, and university administrators into one frictionless workflow.
+          <p className="text-xs sm:text-sm text-slate-500">
+            Dedicated workflows tailored for students, faculty examiners, and university administrators.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-md hover:border-slate-700 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-950/80 border border-blue-800/80 text-blue-400 flex items-center justify-center font-bold">
-              <Users className="w-6 h-6" />
+          {/* Student Card */}
+          <div className="bg-white rounded-xl p-6 border border-emerald-100/80 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-slate-800 flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Student Portal</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Access assigned examinations, complete device setup, take tests in a secure environment, and view completed scorecards.
+              </p>
             </div>
-            <h3 className="text-lg font-bold text-white">Student Portal</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Clear exam schedules, pre-test webcam & mic permission checks, interactive MCQ test interface, and instant score rank reports.
-            </p>
-            <button
-              onClick={() => handleDemoLaunch('student')}
-              className="text-xs font-semibold text-blue-400 flex items-center space-x-1 hover:underline pt-2"
-            >
-              <span>Launch Student View</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <Link to="/student/login" className="font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center space-x-1">
+                <span>Student Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link to="/student/register" className="text-slate-500 hover:text-slate-700">
+                Register →
+              </Link>
+            </div>
           </div>
 
-          <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-md hover:border-slate-700 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-950/80 border border-indigo-800/80 text-indigo-400 flex items-center justify-center font-bold">
-              <FileCheck className="w-6 h-6" />
+          {/* Interviewer Card */}
+          <div className="bg-white rounded-xl p-6 border border-emerald-100/80 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-slate-800 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">Faculty Examiner Portal</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Upload question papers, configure exam duration and difficulty, view candidate rosters, and generate performance reports.
+              </p>
             </div>
-            <h3 className="text-lg font-bold text-white">Interviewer & Examiner Workstation</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Drag-and-drop PDF question paper upload, AI MCQ compilation, candidate proctor log inspection, and real-time leaderboards.
-            </p>
-            <button
-              onClick={() => handleDemoLaunch('interviewer')}
-              className="text-xs font-semibold text-indigo-400 flex items-center space-x-1 hover:underline pt-2"
-            >
-              <span>Launch Examiner View</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <Link to="/interviewer/login" className="font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center space-x-1">
+                <span>Faculty Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link to="/interviewer/activate" className="text-slate-500 hover:text-slate-700">
+                Activate Account →
+              </Link>
+            </div>
           </div>
 
-          <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-md hover:border-slate-700 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 flex items-center justify-center font-bold">
-              <Shield className="w-6 h-6" />
+          {/* Admin Card */}
+          <div className="bg-white rounded-xl p-6 border border-emerald-100/80 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-slate-800 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">University Administration</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Manage student directories, provision faculty examiner accounts, review session logs, and oversee university examination governance.
+              </p>
             </div>
-            <h3 className="text-lg font-bold text-white">Admin Control Center</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              University-wide exam metrics, student & faculty governance, Recharts interactive data graphs, and feedback management.
-            </p>
-            <button
-              onClick={() => handleDemoLaunch('admin')}
-              className="text-xs font-semibold text-slate-200 flex items-center space-x-1 hover:underline pt-2"
-            >
-              <span>Launch Admin Control</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <Link to="/admin/login" className="font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center space-x-1">
+                <span>Admin Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <span className="text-[11px] text-slate-400">Institutional Governance</span>
+            </div>
           </div>
 
         </div>
       </section>
 
-      {/* 3. AI PROCTORING SECTION */}
-      <section className="bg-slate-900 text-white py-16 sm:py-20 rounded-3xl mx-4 sm:mx-6 lg:mx-8 px-6 lg:px-12 border border-slate-800 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="px-3 py-1 bg-blue-950/80 text-blue-300 border border-blue-800/80 text-xs font-semibold rounded-full uppercase tracking-wider">
-              AI Security Shield
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-              Multi-Layered AI Proctoring Engine
+      {/* 3. CORE PLATFORM FEATURES OVERVIEW */}
+      <section className="bg-white py-12 border-y border-emerald-100/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              Integrated Examination Features
             </h2>
-            <p className="text-slate-400 text-sm">
-              Comprehensive threat detection safeguarding academic integrity during remote & campus digital examinations.
+            <p className="text-xs text-slate-500">
+              Built-in tools supporting accurate delivery, evaluation, and integrity across all test sessions.
             </p>
           </div>
 
-          {/* Grid of 9 AI Proctoring Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { title: 'Face Detection', desc: 'Verifies continuous biometric presence throughout the exam session.', icon: Camera },
-              { title: 'Eye Tracking', desc: 'Detects gaze deviation from the screen to detect off-screen reading.', icon: Eye },
-              { title: 'Tab Switch Detection', desc: 'Logs immediate warnings if candidate switches browser tabs or windows.', icon: Laptop },
-              { title: 'Multiple Person Detection', desc: 'Flags additional individuals appearing in candidate camera feed.', icon: Users },
-              { title: 'Mobile Phone Detection', desc: 'Computer vision identifies mobile devices or smart cameras in view.', icon: Smartphone },
-              { title: 'Electronic Device Detection', desc: 'Scans for unauthorized secondary screens, headsets, or devices.', icon: Sliders },
-              { title: 'Browser Exit Detection', desc: 'Alerts if lock-down browser window loses focus.', icon: ShieldAlert },
-              { title: 'Fullscreen Exit Detection', desc: 'Enforces strictly locked fullscreen mode throughout exam duration.', icon: Lock },
-              { title: 'Copy / Paste Detection', desc: 'Blocks keyboard clipboard operations, right-clicks, and text selection.', icon: Copy },
-            ].map((p, idx) => {
-              const IconComp = p.icon;
+              { title: 'Question Delivery Engine', desc: 'Fast, responsive question navigator with answer caching and bookmarking.', icon: FileCheck },
+              { title: 'Presence Verification', desc: 'Periodic biometric checks confirming continuous student attendance.', icon: Camera },
+              { title: 'Browser Security Enforcer', desc: 'Prevents tab switching, screen loss, and unauthorized external window actions.', icon: Laptop },
+              { title: 'Full Screen Lock', desc: 'Ensures dedicated focus by enforcing fullscreen mode throughout the test.', icon: Lock },
+              { title: 'Copy & Paste Restriction', desc: 'Secures exam integrity by disabling clipboard actions and shortcuts.', icon: Copy },
+              { title: 'Instant Scorecards & Analytics', desc: 'Generates detailed score breakdowns and evaluation metrics immediately.', icon: Award },
+            ].map((item, idx) => {
+              const Icon = item.icon;
               return (
-                <div key={idx} className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-2 hover:border-blue-500/50 transition-colors">
-                  <div className="flex items-center space-x-3 text-blue-400">
-                    <IconComp className="w-5 h-5" />
-                    <h4 className="font-bold text-white text-sm">{p.title}</h4>
+                <div key={idx} className="bg-[#F9FAF9] rounded-lg p-4 border border-emerald-100/80 space-y-1.5 shadow-2xs">
+                  <div className="flex items-center space-x-2 text-slate-900 font-semibold text-xs">
+                    <Icon className="w-4 h-4 text-emerald-600" />
+                    <span>{item.title}</span>
                   </div>
-                  <p className="text-slate-400 text-xs leading-relaxed">{p.desc}</p>
+                  <p className="text-slate-500 text-[11px] leading-relaxed">{item.desc}</p>
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. STATISTICS COUNTER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-md p-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
-            <div className="p-2">
-              <div className="text-3xl sm:text-4xl font-extrabold text-blue-400">250,000+</div>
-              <div className="text-xs font-semibold text-slate-400 uppercase mt-1">Exams Administered</div>
-            </div>
-            <div className="p-2 pt-6 lg:pt-2">
-              <div className="text-3xl sm:text-4xl font-extrabold text-white">99.8%</div>
-              <div className="text-xs font-semibold text-slate-400 uppercase mt-1">Proctor Accuracy Rate</div>
-            </div>
-            <div className="p-2 pt-6 lg:pt-2">
-              <div className="text-3xl sm:text-4xl font-extrabold text-blue-400">65+</div>
-              <div className="text-xs font-semibold text-slate-400 uppercase mt-1">Partner Universities</div>
-            </div>
-            <div className="p-2 pt-6 lg:pt-2">
-              <div className="text-3xl sm:text-4xl font-extrabold text-emerald-400">&lt; 1 sec</div>
-              <div className="text-xs font-semibold text-slate-400 uppercase mt-1">Violation Log Latency</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. CONTACT CTA */}
-      <section className="max-w-5xl mx-auto px-4 text-center">
-        <div className="bg-gradient-to-r from-blue-900 via-blue-950 to-indigo-950 border border-blue-800/80 text-white rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-extrabold">Ready to Modernize University Examinations?</h2>
-          <p className="text-blue-200 text-sm max-w-xl mx-auto">
-            Schedule a demo with our university IT onboarding team or test the portal instantly.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/contact"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition-colors shadow-md"
-            >
-              Contact University Board
-            </Link>
-            <button
-              onClick={() => handleDemoLaunch('student')}
-              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl border border-slate-700 transition-colors"
-            >
-              Launch Instant Demo
-            </button>
           </div>
         </div>
       </section>

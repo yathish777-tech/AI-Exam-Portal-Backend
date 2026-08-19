@@ -1,6 +1,7 @@
 import React from 'react';
-import { Star, CheckCircle2, User, Inbox } from 'lucide-react';
+import { Star, CheckCircle2, Inbox } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import Avatar from '../../components/common/Avatar';
 import { useData } from '../../context/DataContext';
 
 export default function FeedbackList() {
@@ -36,7 +37,7 @@ export default function FeedbackList() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <User className="w-4 h-4 text-blue-600" />
+                    <Avatar name={fb.user} size="xs" />
                     <span className="font-bold text-slate-900 text-sm">{fb.user}</span>
                   </div>
                   <Badge variant={fb.status === 'Resolved' ? 'emerald' : 'amber'}>{fb.status}</Badge>
