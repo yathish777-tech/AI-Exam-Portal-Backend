@@ -7,7 +7,7 @@ export default function StudentLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex text-slate-800 font-sans">
+    <div className="min-h-screen bg-[#F9FAF9] flex text-slate-800 font-sans">
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
         <Header title="Student Examination Portal" subtitle="Overview of upcoming exams, performance analytics & secure proctoring" setMobileOpen={setMobileOpen} />

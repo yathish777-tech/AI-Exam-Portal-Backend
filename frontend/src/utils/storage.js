@@ -41,19 +41,9 @@ export const storage = {
     return data ? JSON.parse(data) : null;
   },
 
-  setUser: (user, token) => {
+  setUser: (user) => {
     localStorage.setItem(KEYS.USER, JSON.stringify(user));
-    if (token) {
-      localStorage.setItem(KEYS.TOKEN, token);
-    }
-  },
-
-  setToken: (token) => {
-    localStorage.setItem(KEYS.TOKEN, token);
-  },
-
-  removeToken: () => {
-    localStorage.removeItem(KEYS.TOKEN);
+    localStorage.setItem(KEYS.TOKEN, `token_mock_${user.id}_${Date.now()}`);
   },
 
   removeUser: () => {

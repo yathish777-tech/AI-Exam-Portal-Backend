@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trophy, Search, Inbox } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import Avatar from '../../components/common/Avatar';
 import { useData } from '../../context/DataContext';
 
 export default function Leaderboard() {
@@ -96,7 +97,12 @@ export default function Leaderboard() {
                           #{item.rank}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900">{item.studentName}</td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        <div className="flex items-center space-x-2">
+                          <Avatar name={item.studentName} size="xs" />
+                          <span>{item.studentName}</span>
+                        </div>
+                      </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-600">{item.rollNo}</td>
                       <td className="py-3.5 px-4 text-slate-500">{item.department}</td>
                       <td className="py-3.5 px-4 text-center font-bold text-blue-600 text-sm">

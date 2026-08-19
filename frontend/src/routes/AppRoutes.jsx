@@ -18,6 +18,8 @@ import StudentLogin from '../pages/auth/StudentLogin';
 import StudentRegister from '../pages/auth/StudentRegister';
 import InterviewerLogin from '../pages/auth/InterviewerLogin';
 import InterviewerRegister from '../pages/auth/InterviewerRegister';
+import InterviewerActivation from '../pages/auth/InterviewerActivation';
+import ForgotPassword from '../pages/auth/ForgotPassword';
 import AdminLogin from '../pages/auth/AdminLogin';
 
 // Student Pages
@@ -36,11 +38,17 @@ import CandidatesList from '../pages/interviewer/CandidatesList';
 import PastInterviews from '../pages/interviewer/PastInterviews';
 import Leaderboard from '../pages/interviewer/Leaderboard';
 import InterviewerProfile from '../pages/interviewer/InterviewerProfile';
+import LiveMonitoring from '../pages/interviewer/LiveMonitoring';
+import InterviewerReports from '../pages/interviewer/InterviewerReports';
+import InterviewerSettings from '../pages/interviewer/InterviewerSettings';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import ManageStudents from '../pages/admin/ManageStudents';
 import ManageInterviewers from '../pages/admin/ManageInterviewers';
+import ManageExams from '../pages/admin/ManageExams';
+import WarningLogs from '../pages/admin/WarningLogs';
+import ActivityLogs from '../pages/admin/ActivityLogs';
 import SystemReports from '../pages/admin/SystemReports';
 import FeedbackList from '../pages/admin/FeedbackList';
 import SystemSettings from '../pages/admin/SystemSettings';
@@ -65,6 +73,8 @@ export default function AppRoutes() {
       <Route path="/student/register" element={<StudentRegister />} />
       <Route path="/interviewer/login" element={<InterviewerLogin />} />
       <Route path="/interviewer/register" element={<InterviewerRegister />} />
+      <Route path="/interviewer/activate" element={<InterviewerActivation />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/admin/login" element={<AdminLogin />} />
 
       {/* Student Protected Routes */}
@@ -88,9 +98,12 @@ export default function AppRoutes() {
           <Route path="/interviewer/dashboard" element={<InterviewerDashboard />} />
           <Route path="/interviewer/upload" element={<UploadQuestions />} />
           <Route path="/interviewer/candidates" element={<CandidatesList />} />
+          <Route path="/interviewer/live-monitoring" element={<LiveMonitoring />} />
+          <Route path="/interviewer/reports" element={<InterviewerReports />} />
           <Route path="/interviewer/past" element={<PastInterviews />} />
           <Route path="/interviewer/leaderboard" element={<Leaderboard />} />
           <Route path="/interviewer/profile" element={<InterviewerProfile />} />
+          <Route path="/interviewer/settings" element={<InterviewerSettings />} />
         </Route>
       </Route>
 
@@ -100,6 +113,9 @@ export default function AppRoutes() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/students" element={<ManageStudents />} />
           <Route path="/admin/interviewers" element={<ManageInterviewers />} />
+          <Route path="/admin/exams" element={<ManageExams />} />
+          <Route path="/admin/warnings" element={<WarningLogs />} />
+          <Route path="/admin/activity" element={<ActivityLogs />} />
           <Route path="/admin/reports" element={<SystemReports />} />
           <Route path="/admin/feedback" element={<FeedbackList />} />
           <Route path="/admin/settings" element={<SystemSettings />} />

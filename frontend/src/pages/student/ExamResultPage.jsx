@@ -95,11 +95,11 @@ export default function ExamResultPage() {
       </div>
 
       {/* Hero Performance Card */}
-      <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+      <div className="bg-white rounded-xl p-6 sm:p-8 border border-emerald-100/80 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-100">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
                 {examCode}
               </span>
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${
@@ -117,9 +117,9 @@ export default function ExamResultPage() {
             </p>
           </div>
 
-          <div className="text-left sm:text-right bg-slate-50 p-4 rounded-xl border border-slate-200/80 shrink-0">
+          <div className="text-left sm:text-right bg-[#F9FAF9] p-4 rounded-xl border border-emerald-100/80 shrink-0">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Final Score</span>
-            <div className="text-3xl font-extrabold text-blue-600 mt-0.5">
+            <div className="text-3xl font-extrabold text-emerald-600 mt-0.5">
               {marks} <span className="text-sm font-semibold text-slate-400">/ {totalMarks}</span>
             </div>
             <span className="text-xs font-bold text-slate-600">{percentage}% Aggregate</span>
@@ -146,13 +146,13 @@ export default function ExamResultPage() {
             <p className="text-[10px] text-red-700 font-medium">{unanswered > 0 ? `${unanswered} Unanswered` : 'All Attempted'}</p>
           </div>
 
-          <div className="p-4 bg-blue-50/60 border border-blue-200/80 rounded-lg space-y-1">
-            <div className="flex items-center space-x-1.5 text-blue-800 text-xs font-bold">
-              <Clock className="w-4 h-4 text-blue-600" />
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+            <div className="flex items-center space-x-1.5 text-slate-800 text-xs font-bold">
+              <Clock className="w-4 h-4 text-emerald-600" />
               <span>Time Taken</span>
             </div>
-            <p className="text-xl font-bold text-blue-700 mt-1">{timeTaken}</p>
-            <p className="text-[10px] text-blue-700 font-medium">Exam Duration: 45 Mins</p>
+            <p className="text-xl font-bold text-slate-900 mt-1">{timeTaken}</p>
+            <p className="text-[10px] text-slate-500 font-medium">Exam Duration: 45 Mins</p>
           </div>
 
           <div className={`p-4 rounded-lg space-y-1 border ${
@@ -176,10 +176,10 @@ export default function ExamResultPage() {
       </div>
 
       {/* Detailed Violations Log */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl p-6 border border-emerald-100/80 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <h3 className="text-sm font-bold text-slate-900">AI Proctoring Audit Log</h3>
           </div>
           <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
@@ -225,13 +225,13 @@ export default function ExamResultPage() {
 
       {/* Optional Detailed Question Breakdown Accordion */}
       {result.questions && result.questions.length > 0 && (
-        <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div className="bg-white rounded-xl p-6 border border-emerald-100/80 shadow-xs space-y-4">
           <button
             onClick={() => setExpandedQuestions(!expandedQuestions)}
             className="w-full flex items-center justify-between text-left text-sm font-bold text-slate-900"
           >
             <div className="flex items-center space-x-2">
-              <HelpCircle className="w-4 h-4 text-blue-600" />
+              <HelpCircle className="w-4 h-4 text-emerald-600" />
               <span>Review Questions & Correct Explanations</span>
             </div>
             {expandedQuestions ? (
@@ -247,7 +247,7 @@ export default function ExamResultPage() {
                 const studentAns = result.userAnswers ? result.userAnswers[q.id] : undefined;
                 const isCorrect = studentAns === q.correctAnswer;
                 return (
-                  <div key={q.id} className="p-4 bg-slate-50 border border-slate-200/80 rounded-lg space-y-3 text-xs">
+                  <div key={q.id} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3 text-xs">
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-bold text-slate-900">
                         {idx + 1}. {q.question}
@@ -278,8 +278,8 @@ export default function ExamResultPage() {
                     </div>
 
                     {q.explanation && (
-                      <p className="text-[11px] text-slate-600 bg-blue-50/70 p-2.5 rounded border border-blue-100 leading-relaxed">
-                        <strong className="text-blue-900">Explanation:</strong> {q.explanation}
+                      <p className="text-[11px] text-slate-600 bg-emerald-50/70 p-2.5 rounded border border-emerald-100 leading-relaxed">
+                        <strong className="text-emerald-900">Explanation:</strong> {q.explanation}
                       </p>
                     )}
                   </div>
@@ -294,7 +294,7 @@ export default function ExamResultPage() {
       <div className="flex items-center justify-between pt-4 border-t border-slate-200">
         <Link
           to="/student/dashboard"
-          className="px-5 py-2.5 bg-[#374151] hover:bg-[#1F2937] text-white font-medium text-xs rounded-md shadow-xs transition-colors inline-flex items-center space-x-2"
+          className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-md shadow-xs transition-colors inline-flex items-center space-x-2"
         >
           <LayoutDashboard className="w-4 h-4" />
           <span>Return to Dashboard</span>
@@ -302,7 +302,7 @@ export default function ExamResultPage() {
 
         <Link
           to="/student/completed"
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-md shadow-xs transition-colors inline-flex items-center space-x-2"
+          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-md shadow-xs transition-colors inline-flex items-center space-x-2"
         >
           <Award className="w-4 h-4" />
           <span>View All Scorecards</span>
